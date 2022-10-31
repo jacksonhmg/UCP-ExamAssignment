@@ -7,4 +7,12 @@
         char dir;
     } antStruct;
 
+    typedef struct
+    {
+        int nR;
+        int nC;
+        int steps;
+        float sleep;
+    } simInfo;
+
 #endif

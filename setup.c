@@ -20,6 +20,11 @@ void printMap(char** topMap, char** underMap, antStruct* ant1, antStruct* ant2, 
                     setBackground("green");
                     colChck = 1;
                 }
+                if(underMap[i][j] == 'R')
+                {
+                    setBackground("red");
+                    colChck = 1;
+                }
                 printf("%c",topMap[i][j]);
                 if(colChck) /* reset for next iteration*/
                 {
@@ -34,55 +39,80 @@ void printMap(char** topMap, char** underMap, antStruct* ant1, antStruct* ant2, 
 
 void loop(char** topMap, char** underMap, antStruct* ant1, antStruct* ant2, int nR, int nC)
 {
-    printMap(topMap, underMap, ant1, ant2, nR, nC);
-    topMap[ant1->r][ant1->c] = ' ';
-    topMap[ant2->r][ant2->c] = ' ';
-    if(underMap[ant1->r][ant1->c] == 'G')
+    int counter = 0;
+    while(counter < 6)
     {
-        underMap[ant1->r][ant1->c] = ' ';
+        printMap(topMap, underMap, ant1, ant2, nR, nC);
+        topMap[ant1->r][ant1->c] = ' ';
+        topMap[ant2->r][ant2->c] = ' ';
+        if(underMap[ant1->r][ant1->c] == 'G' || underMap[ant1->r][ant1->c] == 'R' || underMap[ant1->r][ant1->c] == 'B')
+        {
+            underMap[ant1->r][ant1->c] = ' ';
+            if(ant1->dir == '^')
+            {
+                ant1->dir = '<';
+            }
+            else if(ant1->dir == 'v')
+            {
+                ant1->dir = '>';
+            }
+            else if(ant1->dir == '>')
+            {
+                ant1->dir = '^';
+            }
+            else if(ant1->dir == '<')
+            {
+                ant1->dir = 'v';
+            }
+        }
+        else if(underMap[ant1->r][ant1->c] == ' ')
+        {
+            underMap[ant1->r][ant1->c] = 'R';
+            if(ant1->dir == '^')
+            {
+                ant1->dir = '>';
+            }
+            else if(ant1->dir == 'v')
+            {
+                ant1->dir = '<';
+            }
+            else if(ant1->dir == '>')
+            {
+                ant1->dir = 'v';
+            }
+            else if(ant1->dir == '<')
+            {
+                ant1->dir = '^';
+            }
+        }
+        topMap[ant1->r][ant1->c] = ant1->dir;
+        topMap[ant2->r][ant2->c] = ant2->dir;
+        /*newSleep(1);
+        printMap(topMap, underMap, ant1, ant2, nR, nC);*/
+        topMap[ant1->r][ant1->c] = ' ';
+        topMap[ant2->r][ant2->c] = ' ';
         if(ant1->dir == '^')
         {
-            ant1->dir = '<';
+            ant1->r --;
         }
         else if(ant1->dir == 'v')
         {
-            ant1->dir = '>';
+            ant1->r ++;
         }
         else if(ant1->dir == '>')
         {
-            ant1->dir = '^';
+            ant1->c ++;
         }
         else if(ant1->dir == '<')
         {
-            ant1->dir = 'v';
+            ant1->c --;
         }
+        topMap[ant1->r][ant1->c] = ant1->dir;
+        topMap[ant2->r][ant2->c] = ant2->dir;
+        newSleep(1);
+        printMap(topMap, underMap, ant1, ant2, nR, nC);
+        counter++;
     }
-    topMap[ant1->r][ant1->c] = ant1->dir;
-    topMap[ant2->r][ant2->c] = ant2->dir;
-    newSleep(1);
-    printMap(topMap, underMap, ant1, ant2, nR, nC);
-    topMap[ant1->r][ant1->c] = ' ';
-    topMap[ant2->r][ant2->c] = ' ';
-    if(ant1->dir == '^')
-    {
-        ant1->r --;
-    }
-    else if(ant1->dir == 'v')
-    {
-        ant1->r ++;
-    }
-    else if(ant1->dir == '>')
-    {
-        ant1->c ++;
-    }
-    else if(ant1->dir == '<')
-    {
-        ant1->c --;
-    }
-    topMap[ant1->r][ant1->c] = ant1->dir;
-    topMap[ant2->r][ant2->c] = ant2->dir;
-    newSleep(1);
-    printMap(topMap, underMap, ant1, ant2, nR, nC);
 }
 
 
@@ -92,6 +122,7 @@ int setupGame(int argc, char* argv[])
     char** underMap;
     antStruct* ant1 = (antStruct*)malloc(sizeof(antStruct));
     antStruct* ant2 = (antStruct*)malloc(sizeof(antStruct));
+    simInfo* simsInfo = (simInfo*)malloc(sizeof(simInfo));
 
     int nR,nC,check,i,j;
 
@@ -154,6 +185,7 @@ int setupGame(int argc, char* argv[])
     free(topMap);
     free(ant1);
     free(ant2);
+    free(simsInfo);
     return 0;
 }
 
