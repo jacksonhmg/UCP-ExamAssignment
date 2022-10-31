@@ -4,17 +4,18 @@
 
 #include "setup.h"
 #include "color.h"
-
+#include "newSleep.h"
 
 void printMap(char** topMap, char** underMap, antStruct* ant1, antStruct* ant2, int nR, int nC)
 {
     int i,j,colChck;
+    system("clear");
     for(i=0;i<(nR);i++)
     {
         for(j=0;j<(nC);j++)
         {
                 colChck = 0;
-                if(underMap[i][j] == '1')
+                if(underMap[i][j] == 'G')
                 {
                     setBackground("green");
                     colChck = 1;
@@ -27,6 +28,61 @@ void printMap(char** topMap, char** underMap, antStruct* ant1, antStruct* ant2, 
         }
         printf("\n"); /*new line after each row to show 2d array effect*/
     }
+}
+
+
+
+void loop(char** topMap, char** underMap, antStruct* ant1, antStruct* ant2, int nR, int nC)
+{
+    printMap(topMap, underMap, ant1, ant2, nR, nC);
+    topMap[ant1->r][ant1->c] = ' ';
+    topMap[ant2->r][ant2->c] = ' ';
+    if(underMap[ant1->r][ant1->c] == 'G')
+    {
+        underMap[ant1->r][ant1->c] = ' ';
+        if(ant1->dir == '^')
+        {
+            ant1->dir = '<';
+        }
+        else if(ant1->dir == 'v')
+        {
+            ant1->dir = '>';
+        }
+        else if(ant1->dir == '>')
+        {
+            ant1->dir = '^';
+        }
+        else if(ant1->dir == '<')
+        {
+            ant1->dir = 'v';
+        }
+    }
+    topMap[ant1->r][ant1->c] = ant1->dir;
+    topMap[ant2->r][ant2->c] = ant2->dir;
+    newSleep(1);
+    printMap(topMap, underMap, ant1, ant2, nR, nC);
+    topMap[ant1->r][ant1->c] = ' ';
+    topMap[ant2->r][ant2->c] = ' ';
+    if(ant1->dir == '^')
+    {
+        ant1->r --;
+    }
+    else if(ant1->dir == 'v')
+    {
+        ant1->r ++;
+    }
+    else if(ant1->dir == '>')
+    {
+        ant1->c ++;
+    }
+    else if(ant1->dir == '<')
+    {
+        ant1->c --;
+    }
+    topMap[ant1->r][ant1->c] = ant1->dir;
+    topMap[ant2->r][ant2->c] = ant2->dir;
+    newSleep(1);
+    printMap(topMap, underMap, ant1, ant2, nR, nC);
 }
 
 
@@ -77,20 +133,13 @@ int setupGame(int argc, char* argv[])
         }
     }
 
-
-    for(i=0;i<(nR);i++)
-    {
-        for(j=0;j<(nC);j++)
-        {
-                printf("%c",topMap[i][j]);
-        }
-        printf("\n"); /*new line after each row to show 2d array effect*/
-    }
-
     topMap[ant1->r][ant1->c] = ant1->dir;
     topMap[ant2->r][ant2->c] = ant2->dir;
 
-    printMap(topMap, underMap, ant1, ant2, nR, nC);
+    if(check)
+    {
+        loop(topMap, underMap, ant1, ant2, nR, nC);
+    }
 
 
     for(i = 0; i < nR; i++)
@@ -173,11 +222,11 @@ int readMapFile(char*** underMap, int* nR, int* nC, antStruct* ant1, antStruct* 
     do
     {
         lilchecker = 1;
-        char str[*(nC) * 2];
         if(counter == 1)
         {
             nRead = fscanf(f1, "%d %d %c ", &(ant1->r), &(ant1->c), &(ant1->dir));
-            ant1->r ++;
+            ant1->r ++; /* increase numbers like described before with map size increases. 
+            now user can enter (0,0) and have it mean the top left corner INSIDE the borders */
             ant1->c ++;
             counter++;
         }
@@ -214,7 +263,7 @@ int readMapFile(char*** underMap, int* nR, int* nC, antStruct* ant1, antStruct* 
                 }
                 if((char)ch == '1')
                 {
-                    (*underMap)[rowcounter][colcounter] = '1';
+                    (*underMap)[rowcounter][colcounter] = 'G';
                 }
             }
             else
@@ -229,111 +278,23 @@ int readMapFile(char*** underMap, int* nR, int* nC, antStruct* ant1, antStruct* 
     
 
 
-
-    for(i=0;i<(*nR);i++)
-    {
-        for(j=0;j<(*nC);j++)
-        {
-                printf("%c",(*underMap)[i][j]);
-        }
-        printf("\n"); /*new line after each row to show 2d array effect*/
-    }
-
-
-    if(nR < 2 || nC < 2 || ant1->r < 1 || ant1->c < 1 || ant2->r < 1 || ant2->c < 1) /*numbers are higher than 0 because of the addition done above*/
+    if(*nR < 2 || *nC < 2 || ant1->r < 1 || ant1->c < 1 || ant2->r < 1 || ant2->c < 1) /*numbers are higher than 0 because of the addition done above*/
     {
         printf("Cannot enter negative numbers!\n");
         check = 0;
     }
 
-    if(ant1->r > nR - 2 || ant1->c > nC - 2)
+    if(ant1->r > *nR - 2 || ant1->c > *nC - 2)
     {
         printf("Ant1 position placed outside of map area!\n");
         check = 0;
     }
-    if(ant2->r > nR - 2 || ant2->c > nC - 2)
+    if(ant2->r > *nR - 2 || ant2->c > *nC - 2)
     {
         printf("Ant2 position placed outside of map area!\n");
         check = 0;
     }
 
-
-
     fclose(f1);
     return check;
-
-    /* int nRead, int1, int2, xR, xC, check;
-    // char c1;
-    // FILE* f1 = fopen(argv[1], "r");
-    // check = 1;
-    // if(f1 == NULL)
-    // {
-    //     perror("Error opening f1");
-    // }
-    // nRead = fscanf(f1, "%d %d ", &map2->nR, &map2->nC);
-    // map2->nR += 2; /* increase so that if a user enters map size (5,5) they mean the size inside the borders. so technically map needs to be (7,7) 
-    // map2->nC += 2;
-    
-
-    // if(map2->nR < 7 || map2->nC < 7) /*7 because the inside can't be smaller than 5 and 7 is the number of whole array including border
-    // {
-    //     printf("Map size too small!\n");
-    //     check = 0;
-    // }
-
-
-    // do
-    // {
-    //     nRead = fscanf(f1, "%d %d %c ", &int1, &int2, &c1);
-    //     if(nRead != EOF)
-    //     {
-    //         if(c1 == 'P')
-    //         {
-    //             map2->pR = int1 + 1; /* increase numbers like described before with map size increases. 
-    //             now user can enter (0,0) and have it mean the top left corner INSIDE the borders
-    //             map2->pC = int2 + 1;
-    //         }
-    //         if(c1 == 'G')
-    //         {
-    //             map2->gR = int1 + 1;
-    //             map2->gC = int2 + 1;
-    //         }
-    //         if(c1 == 'X')
-    //         {
-    //             xR = int1 + 1;
-    //             xC = int2 + 1;
-    //             if(xR > map2->nR - 2 || xC > map2->nC - 2)
-    //             {
-    //                 printf("X position placed outside of map area!\n");
-    //                 check = 0;
-    //             }
-    //             if(xR < 1 || xC < 1)
-    //             {
-    //                 printf("Cannot enter negative numbers!\n");
-    //                 check = 0;
-    //             }
-    //         }
-    //     }
-    // } while (nRead != EOF);
-    
-    // if(map2->nR < 2 || map2->nC < 2 || map2->pR < 1 || map2->pC < 1 || map2->gR < 1 || map2->gC < 1) /*numbers are higher than 0 because of the addition done above
-    // {
-    //     printf("Cannot enter negative numbers!\n");
-    //     check = 0;
-    // }
-
-    // if(map2->pR > map2->nR - 2 || map2->pC > map2->nC - 2)
-    // {
-    //     printf("Player position placed outside of map area!\n");
-    //     check = 0;
-    // }
-    // if(map2->gR > map2->nR - 2 || map2->gC > map2->nC - 2)
-    // {
-    //     printf("Goal position placed outside of map area!\n");
-    //     check = 0;
-    // }
-    
-    // fclose(f1);
-
-    // return check; */
 }

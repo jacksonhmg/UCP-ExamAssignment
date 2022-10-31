@@ -1,6 +1,6 @@
 CC = gcc -g
 CFLAGS = -Wall -pedantic -ansi
-OBJ = main.o setup.o random.o color.o
+OBJ = main.o setup.o random.o color.o newSleep.o
 EXEC = ant
 
 $(EXEC) : $(OBJ)
@@ -9,7 +9,7 @@ $(EXEC) : $(OBJ)
 main.o : main.c setup.h random.h
 	$(CC) $(CFLAGS) -c main.c
 
-setup.o : setup.c setup.h struct.h color.h
+setup.o : setup.c setup.h struct.h color.h newSleep.h
 	$(CC) $(CFLAGS) -c setup.c
 
 random.o : random.c random.h
@@ -17,6 +17,9 @@ random.o : random.c random.h
 
 color.o : color.c color.h
 	$(CC) $(CFLAGS) -c color.c
+	
+newSleep.o : newSleep.c newSleep.h
+	$(CC) $(CFLAGS) -c newSleep.c
 
 clean:
 	rm -f $(EXEC) $(OBJ)
