@@ -85,15 +85,15 @@ void loop(char** topMap, char** underMap, antStruct* ant1, antStruct* ant2, simI
                 ant1->dir = '^';
             }
         }
-        topMap[ant1->r][ant1->c] = ant1->dir;
+        /*topMap[ant1->r][ant1->c] = ant1->dir;
         topMap[ant2->r][ant2->c] = ant2->dir;
-        /*newSleep(1);
-        printMap(topMap, underMap, ant1, ant2, nR, nC);*/
+        newSleep(1);
+        printMap(topMap, underMap, ant1, ant2, nR, nC);
         topMap[ant1->r][ant1->c] = ' ';
-        topMap[ant2->r][ant2->c] = ' ';
+        topMap[ant2->r][ant2->c] = ' ';*/
         if(ant1->dir == '^')
         {
-            if(ant1->r > 2)
+            if(ant1->r > 1)
             {
                 ant1->r --;
             }
@@ -114,7 +114,7 @@ void loop(char** topMap, char** underMap, antStruct* ant1, antStruct* ant2, simI
         }
         else if(ant1->dir == '<')
         {
-            if(ant1->c > 2)
+            if(ant1->c > 1)
             {
                 ant1->c --;
             }
