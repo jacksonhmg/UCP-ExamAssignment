@@ -3,6 +3,32 @@
 #include <stdlib.h>
 
 #include "setup.h"
+#include "color.h"
+
+
+void printMap(char** topMap, char** underMap, antStruct* ant1, antStruct* ant2, int nR, int nC)
+{
+    int i,j,colChck;
+    for(i=0;i<(nR);i++)
+    {
+        for(j=0;j<(nC);j++)
+        {
+                colChck = 0;
+                if(underMap[i][j] == '1')
+                {
+                    setBackground("green");
+                    colChck = 1;
+                }
+                printf("%c",topMap[i][j]);
+                if(colChck) /* reset for next iteration*/
+                {
+                    setBackground("reset");
+                }
+        }
+        printf("\n"); /*new line after each row to show 2d array effect*/
+    }
+}
+
 
 int setupGame(int argc, char* argv[]) 
 { /*used for initialising command line input, organising map setup, initialising game loop, everything set up wise*/
@@ -11,16 +37,79 @@ int setupGame(int argc, char* argv[])
     antStruct* ant1 = (antStruct*)malloc(sizeof(antStruct));
     antStruct* ant2 = (antStruct*)malloc(sizeof(antStruct));
 
-    int nR,nC,check;
+    int nR,nC,check,i,j;
 
     check = readMapFile(&underMap,&nR,&nC,ant1,ant2,argc,argv);
 
+
+
+
+    topMap = (char**)calloc((nR),sizeof(char*));
+    for(i=0;i<(nR);i++)
+    {
+        topMap[i] = (char*)calloc((nC), sizeof(char));
+    }
+    for(i=0;i<(nR);i++)
+    {
+        topMap[i][(nC)-1] = '*';
+    }
+    for(i=0;i<(nR);i++)
+    {
+        topMap[i][0] = '*';
+    }
+    for(i=0;i<(nC);i++)
+    {
+        topMap[0][i] = '*';
+    }
+    for(i=0;i<(nC);i++)
+    {
+        topMap[(nR)-1][i] = '*';
+    }
+    
+    for(i=0;i<(nR);i++)
+    {
+        for(j=0;j<(nC);j++)
+        {
+            if(topMap[i][j] == 0)
+            {
+                topMap[i][j] =  ' '; /*create empty space look*/
+            }
+        }
+    }
+
+
+    for(i=0;i<(nR);i++)
+    {
+        for(j=0;j<(nC);j++)
+        {
+                printf("%c",topMap[i][j]);
+        }
+        printf("\n"); /*new line after each row to show 2d array effect*/
+    }
+
+
+
+    printMap(topMap, underMap, ant1, ant2, nR, nC);
+
+
+    for(i = 0; i < nR; i++)
+    {
+        free(underMap[i]);
+    }
+    free(underMap);
+    for(i = 0; i < nR; i++)
+    {
+        free(topMap[i]);
+    }
+    free(topMap);
+    free(ant1);
+    free(ant2);
     return 0;
 }
 
 int readMapFile(char*** underMap, int* nR, int* nC, antStruct* ant1, antStruct* ant2, int argc, char* argv[])
 {
-    int nRead, check, lilchecker, counter, i, j;
+    int nRead, check, lilchecker, counter, i, j, ch, colcounter, rowcounter;
 
     FILE* f1 = fopen(argv[1], "r");
     check = 1;
@@ -44,33 +133,31 @@ int readMapFile(char*** underMap, int* nR, int* nC, antStruct* ant1, antStruct* 
         check = 0;
     }
 
-
-
-    *underMap = (char**)calloc(*nR,sizeof(char*));
-    for(i=0;i<*nR;i++)
+    *underMap = (char**)calloc((*nR),sizeof(char*));
+    for(i=0;i<(*nR);i++)
     {
-        (*underMap)[i] = (char*)calloc(*nC, sizeof(char));
+        (*underMap)[i] = (char*)calloc((*nC), sizeof(char));
     }
-    for(i=0;i<*nR;i++)
+    for(i=0;i<(*nR);i++)
     {
-        (*underMap)[i][*nC-1] = '*';
+        (*underMap)[i][(*nC)-1] = '*';
     }
-    for(i=0;i<*nR;i++)
+    for(i=0;i<(*nR);i++)
     {
         (*underMap)[i][0] = '*';
     }
-    for(i=0;i<*nC;i++)
+    for(i=0;i<(*nC);i++)
     {
         (*underMap)[0][i] = '*';
     }
-    for(i=0;i<*nC;i++)
+    for(i=0;i<(*nC);i++)
     {
-        (*underMap)[*nR-1][i] = '*';
+        (*underMap)[(*nR)-1][i] = '*';
     }
     
-    for(i=0;i<*nR;i++)
+    for(i=0;i<(*nR);i++)
     {
-        for(j=0;j<*nC;j++)
+        for(j=0;j<(*nC);j++)
         {
             if((*underMap)[i][j] == 0)
             {
@@ -79,6 +166,9 @@ int readMapFile(char*** underMap, int* nR, int* nC, antStruct* ant1, antStruct* 
         }
     }
 
+    rowcounter = 1;
+    colcounter = 1;
+
     do
     {
         lilchecker = 1;
@@ -86,32 +176,81 @@ int readMapFile(char*** underMap, int* nR, int* nC, antStruct* ant1, antStruct* 
         if(counter == 1)
         {
             nRead = fscanf(f1, "%d %d %c ", &(ant1->r), &(ant1->c), &(ant1->dir));
-            printf("%d %d %c ", (ant1->r), (ant1->c), (ant1->dir));
+            counter++;
         }
         else if(counter == 2)
         {
             nRead = fscanf(f1, "%d %d %c ", &(ant2->r), &(ant2->c), &(ant2->dir));
-            printf("%d %d %c ", (ant2->r), (ant2->c), (ant2->dir));
+            counter++;
         }
         else
         {
-            if(fgets(str, *(nC) * 2, f1) != NULL)
+            /*if(fgets(str, *(nC) * 2, f1) != NULL)
             {
                 printf("%s \n", str);
             }
             else
             {
                 lilchecker = 0;
+            }*/
+
+            ch = fgetc(f1);
+
+            if(ch != EOF)
+            {
+                if((char)ch == ' ')
+                {
+                    colcounter ++;
+                }
+                if((char)ch == '\n')
+                {
+                    rowcounter ++;
+                    colcounter = 1;
+                }
+                if((char)ch == '1')
+                {
+                    (*underMap)[rowcounter][colcounter] = '1';
+                }
+            }
+            else
+            {
+                lilchecker = 0;
+                printf("\n");
             }
 
         }
-
-        counter++;
+        
     } while (nRead != EOF && lilchecker == 1);
     
 
 
 
+    for(i=0;i<(*nR);i++)
+    {
+        for(j=0;j<(*nC);j++)
+        {
+                printf("%c",(*underMap)[i][j]);
+        }
+        printf("\n"); /*new line after each row to show 2d array effect*/
+    }
+
+
+    if(nR < 2 || nC < 2 || ant1->r < 1 || ant1->c < 1 || ant2->r < 1 || ant2->c < 1) /*numbers are higher than 0 because of the addition done above*/
+    {
+        printf("Cannot enter negative numbers!\n");
+        check = 0;
+    }
+
+    if(ant1->r > nR - 2 || ant1->c > nC - 2)
+    {
+        printf("Ant1 position placed outside of map area!\n");
+        check = 0;
+    }
+    if(ant2->r > nR - 2 || ant2->c > nC - 2)
+    {
+        printf("Ant2 position placed outside of map area!\n");
+        check = 0;
+    }
 
 
 
