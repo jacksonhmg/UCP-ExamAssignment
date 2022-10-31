@@ -87,7 +87,8 @@ int setupGame(int argc, char* argv[])
         printf("\n"); /*new line after each row to show 2d array effect*/
     }
 
-
+    topMap[ant1->r][ant1->c] = ant1->dir;
+    topMap[ant2->r][ant2->c] = ant2->dir;
 
     printMap(topMap, underMap, ant1, ant2, nR, nC);
 
@@ -176,11 +177,15 @@ int readMapFile(char*** underMap, int* nR, int* nC, antStruct* ant1, antStruct* 
         if(counter == 1)
         {
             nRead = fscanf(f1, "%d %d %c ", &(ant1->r), &(ant1->c), &(ant1->dir));
+            ant1->r ++;
+            ant1->c ++;
             counter++;
         }
         else if(counter == 2)
         {
             nRead = fscanf(f1, "%d %d %c ", &(ant2->r), &(ant2->c), &(ant2->dir));
+            ant2->r ++;
+            ant2->c ++;
             counter++;
         }
         else
