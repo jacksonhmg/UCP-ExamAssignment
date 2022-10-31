@@ -6,13 +6,13 @@
 #include "color.h"
 #include "newSleep.h"
 
-void printMap(char** topMap, char** underMap, antStruct* ant1, antStruct* ant2, int nR, int nC)
+void printMap(char** topMap, char** underMap, antStruct* ant1, antStruct* ant2, simInfo* simsInfo)
 {
     int i,j,colChck;
     system("clear");
-    for(i=0;i<(nR);i++)
+    for(i=0;i<(simsInfo->nR);i++)
     {
-        for(j=0;j<(nC);j++)
+        for(j=0;j<(simsInfo->nC);j++)
         {
                 colChck = 0;
                 if(underMap[i][j] == 'G')
@@ -37,12 +37,12 @@ void printMap(char** topMap, char** underMap, antStruct* ant1, antStruct* ant2, 
 
 
 
-void loop(char** topMap, char** underMap, antStruct* ant1, antStruct* ant2, int nR, int nC)
+void loop(char** topMap, char** underMap, antStruct* ant1, antStruct* ant2, simInfo* simsInfo)
 {
     int counter = 0;
-    while(counter < 6)
+    printMap(topMap, underMap, ant1, ant2, simsInfo);
+    while(counter < simsInfo->steps)
     {
-        printMap(topMap, underMap, ant1, ant2, nR, nC);
         topMap[ant1->r][ant1->c] = ' ';
         topMap[ant2->r][ant2->c] = ' ';
         if(underMap[ant1->r][ant1->c] == 'G' || underMap[ant1->r][ant1->c] == 'R' || underMap[ant1->r][ant1->c] == 'B')
@@ -93,24 +93,36 @@ void loop(char** topMap, char** underMap, antStruct* ant1, antStruct* ant2, int 
         topMap[ant2->r][ant2->c] = ' ';
         if(ant1->dir == '^')
         {
-            ant1->r --;
+            if(ant1->r > 2)
+            {
+                ant1->r --;
+            }
         }
         else if(ant1->dir == 'v')
         {
-            ant1->r ++;
+            if(ant1->r < simsInfo->nR - 2)
+            {
+                ant1->r ++;
+            }
         }
         else if(ant1->dir == '>')
         {
-            ant1->c ++;
+            if(ant1->c < simsInfo->nC - 2)
+            {
+                ant1->c ++;
+            }
         }
         else if(ant1->dir == '<')
         {
-            ant1->c --;
+            if(ant1->c > 2)
+            {
+                ant1->c --;
+            }
         }
         topMap[ant1->r][ant1->c] = ant1->dir;
         topMap[ant2->r][ant2->c] = ant2->dir;
-        newSleep(1);
-        printMap(topMap, underMap, ant1, ant2, nR, nC);
+        newSleep(simsInfo->sleep);
+        printMap(topMap, underMap, ant1, ant2, simsInfo);
         counter++;
     }
 }
@@ -124,38 +136,39 @@ int setupGame(int argc, char* argv[])
     antStruct* ant2 = (antStruct*)malloc(sizeof(antStruct));
     simInfo* simsInfo = (simInfo*)malloc(sizeof(simInfo));
 
-    int nR,nC,check,i,j;
+    int check,i,j;
 
-    check = readMapFile(&underMap,&nR,&nC,ant1,ant2,argc,argv);
+    check = readMapFile(&underMap,simsInfo,ant1,ant2,argc,argv);
+
+    simsInfo->steps = atoi(argv[2]);
+    simsInfo->sleep = atof(argv[3]);
 
 
-
-
-    topMap = (char**)calloc((nR),sizeof(char*));
-    for(i=0;i<(nR);i++)
+    topMap = (char**)calloc((simsInfo->nR),sizeof(char*));
+    for(i=0;i<(simsInfo->nR);i++)
     {
-        topMap[i] = (char*)calloc((nC), sizeof(char));
+        topMap[i] = (char*)calloc((simsInfo->nC), sizeof(char));
     }
-    for(i=0;i<(nR);i++)
+    for(i=0;i<(simsInfo->nR);i++)
     {
-        topMap[i][(nC)-1] = '*';
+        topMap[i][(simsInfo->nC)-1] = '*';
     }
-    for(i=0;i<(nR);i++)
+    for(i=0;i<(simsInfo->nR);i++)
     {
         topMap[i][0] = '*';
     }
-    for(i=0;i<(nC);i++)
+    for(i=0;i<(simsInfo->nC);i++)
     {
         topMap[0][i] = '*';
     }
-    for(i=0;i<(nC);i++)
+    for(i=0;i<(simsInfo->nC);i++)
     {
-        topMap[(nR)-1][i] = '*';
+        topMap[(simsInfo->nR)-1][i] = '*';
     }
     
-    for(i=0;i<(nR);i++)
+    for(i=0;i<(simsInfo->nR);i++)
     {
-        for(j=0;j<(nC);j++)
+        for(j=0;j<(simsInfo->nC);j++)
         {
             if(topMap[i][j] == 0)
             {
@@ -169,16 +182,16 @@ int setupGame(int argc, char* argv[])
 
     if(check)
     {
-        loop(topMap, underMap, ant1, ant2, nR, nC);
+        loop(topMap, underMap, ant1, ant2, simsInfo);
     }
 
 
-    for(i = 0; i < nR; i++)
+    for(i = 0; i < simsInfo->nR; i++)
     {
         free(underMap[i]);
     }
     free(underMap);
-    for(i = 0; i < nR; i++)
+    for(i = 0; i < simsInfo->nR; i++)
     {
         free(topMap[i]);
     }
@@ -189,7 +202,7 @@ int setupGame(int argc, char* argv[])
     return 0;
 }
 
-int readMapFile(char*** underMap, int* nR, int* nC, antStruct* ant1, antStruct* ant2, int argc, char* argv[])
+int readMapFile(char*** underMap, simInfo* simsInfo, antStruct* ant1, antStruct* ant2, int argc, char* argv[])
 {
     int nRead, check, lilchecker, counter, i, j, ch, colcounter, rowcounter;
 
@@ -205,41 +218,41 @@ int readMapFile(char*** underMap, int* nR, int* nC, antStruct* ant1, antStruct* 
     {
         perror("Error opening f1");
     }
-    nRead = fscanf(f1, "%d %d", &(*nR), &(*nC));
-    *nR +=2; /* increase so that if a user enters map size (5,5) they mean the size inside the borders. so technically map needs to be (7,7) */
-    *nC +=2;
+    nRead = fscanf(f1, "%d %d", &(simsInfo->nR), &(simsInfo->nC));
+    simsInfo->nR +=2; /* increase so that if a user enters map size (5,5) they mean the size inside the borders. so technically map needs to be (7,7) */
+    simsInfo->nC +=2;
 
-    if(*nR < 7 || *nC < 7) /*7 because the inside can't be smaller than 5 and 7 is the number of whole array including border*/
+    if(simsInfo->nR < 7 || simsInfo->nC < 7) /*7 because the inside can't be smaller than 5 and 7 is the number of whole array including border*/
     {
         printf("Map size too small!\n");
         check = 0;
     }
 
-    *underMap = (char**)calloc((*nR),sizeof(char*));
-    for(i=0;i<(*nR);i++)
+    *underMap = (char**)calloc((simsInfo->nR),sizeof(char*));
+    for(i=0;i<(simsInfo->nR);i++)
     {
-        (*underMap)[i] = (char*)calloc((*nC), sizeof(char));
+        (*underMap)[i] = (char*)calloc((simsInfo->nC), sizeof(char));
     }
-    for(i=0;i<(*nR);i++)
+    for(i=0;i<(simsInfo->nR);i++)
     {
-        (*underMap)[i][(*nC)-1] = '*';
+        (*underMap)[i][(simsInfo->nC)-1] = '*';
     }
-    for(i=0;i<(*nR);i++)
+    for(i=0;i<(simsInfo->nR);i++)
     {
         (*underMap)[i][0] = '*';
     }
-    for(i=0;i<(*nC);i++)
+    for(i=0;i<(simsInfo->nC);i++)
     {
         (*underMap)[0][i] = '*';
     }
-    for(i=0;i<(*nC);i++)
+    for(i=0;i<(simsInfo->nC);i++)
     {
-        (*underMap)[(*nR)-1][i] = '*';
+        (*underMap)[(simsInfo->nR)-1][i] = '*';
     }
     
-    for(i=0;i<(*nR);i++)
+    for(i=0;i<(simsInfo->nR);i++)
     {
-        for(j=0;j<(*nC);j++)
+        for(j=0;j<(simsInfo->nC);j++)
         {
             if((*underMap)[i][j] == 0)
             {
@@ -310,18 +323,18 @@ int readMapFile(char*** underMap, int* nR, int* nC, antStruct* ant1, antStruct* 
     
 
 
-    if(*nR < 2 || *nC < 2 || ant1->r < 1 || ant1->c < 1 || ant2->r < 1 || ant2->c < 1) /*numbers are higher than 0 because of the addition done above*/
+    if(simsInfo->nR < 2 || simsInfo->nC < 2 || ant1->r < 1 || ant1->c < 1 || ant2->r < 1 || ant2->c < 1) /*numbers are higher than 0 because of the addition done above*/
     {
         printf("Cannot enter negative numbers!\n");
         check = 0;
     }
 
-    if(ant1->r > *nR - 2 || ant1->c > *nC - 2)
+    if(ant1->r > simsInfo->nR - 2 || ant1->c > simsInfo->nC - 2)
     {
         printf("Ant1 position placed outside of map area!\n");
         check = 0;
     }
-    if(ant2->r > *nR - 2 || ant2->c > *nC - 2)
+    if(ant2->r > simsInfo->nR - 2 || ant2->c > simsInfo->nC - 2)
     {
         printf("Ant2 position placed outside of map area!\n");
         check = 0;
