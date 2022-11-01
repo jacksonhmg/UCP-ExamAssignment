@@ -9,7 +9,7 @@ $(EXEC) : $(OBJ)
 main.o : main.c setup.h random.h
 	$(CC) $(CFLAGS) -c main.c
 
-setup.o : setup.c setup.h struct.h color.h newSleep.h
+setup.o : setup.c setup.h struct.h color.h newSleep.h random.h
 	$(CC) $(CFLAGS) -c setup.c
 
 random.o : random.c random.h

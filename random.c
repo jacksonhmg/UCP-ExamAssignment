@@ -12,7 +12,7 @@ void initRandom()
    If the low is larger than the high, it will return -1 instead.
    In theory, it still works with negative *low* and *high* (as long as low is not larger than high), but for this assignment you will most likely not need the negative number.
    Please ensure you call initRandom function once before starting using this function. */
-int random(int low, int high)
+int myRandom(int low, int high)
 {
     int number = -1;
 

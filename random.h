@@ -2,6 +2,6 @@
 #define RANDOM_H
 
 void initRandom();
-int random(int low, int high);
+int myRandom(int low, int high);
 
 #endif
