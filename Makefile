@@ -1,6 +1,6 @@
 CC = gcc -g
 CFLAGS = -Wall -pedantic -ansi
-OBJ = main.o setup.o random.o color.o newSleep.o
+OBJ = main.o setup.o random.o color.o newSleep.o gameloop.o
 EXEC = ant
 
 $(EXEC) : $(OBJ)
@@ -9,8 +9,11 @@ $(EXEC) : $(OBJ)
 main.o : main.c setup.h random.h
 	$(CC) $(CFLAGS) -c main.c
 
-setup.o : setup.c setup.h struct.h color.h newSleep.h random.h
+setup.o : setup.c setup.h struct.h
 	$(CC) $(CFLAGS) -c setup.c
+
+gameloop.o : gameloop.c gameloop.h struct.h color.h newSleep.h random.h
+	$(CC) $(CFLAGS) -c gameloop.c
 
 random.o : random.c random.h
 	$(CC) $(CFLAGS) -c random.c
