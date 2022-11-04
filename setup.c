@@ -5,7 +5,6 @@
 #include "setup.h"
 #include "gameloop.h"
 
-
 int setupGame(int argc, char* argv[]) 
 { /*used for initialising command line input, organising map setup, initialising game loop, everything set up wise*/
     char** topMap;
