@@ -6,30 +6,31 @@
 #include "gameloop.h"
 
 int setupGame(int argc, char* argv[]) 
-{ /*used for initialising command line input, organising map setup, initialising game loop, everything set up wise*/
-    char** topMap;
-    char** underMap;
+{ /*initialises the game, including structs, maps and begins loop. also controls freeing*/
+    char** topMap; /* topMap means the map visible that has the characters and colours printed */
+    char** underMap; /* underMap means the map that holds where the colours are */
     antStruct* ant1 = (antStruct*)malloc(sizeof(antStruct));
     antStruct* ant2 = (antStruct*)malloc(sizeof(antStruct));
-    simInfo* simsInfo = (simInfo*)malloc(sizeof(simInfo));
+    simInfo* simsInfo = (simInfo*)malloc(sizeof(simInfo)); /* used for holding information about the simulation (map size, simulation steps, sleep length)*/
 
     int check,i;
 
     check = readMapFile(&underMap,simsInfo,ant1,ant2,argc,argv);
 
-    if(check)
+    if(check) /* if all the inputs from the file were valid */
     {
-        simsInfo->steps = atoi(argv[2]);
-        simsInfo->sleep = atof(argv[3]);
+        simsInfo->steps = atoi(argv[2]); /* simulation steps */
+        simsInfo->sleep = atof(argv[3]); /* sleep (delay between each step) length*/
 
-        setup2dArray(&topMap, simsInfo);
+        setup2dArray(&topMap, simsInfo); /* creates topMap in accordance with read in variables */
         
-        topMap[ant1->r][ant1->c] = ant1->dir;
+        topMap[ant1->r][ant1->c] = ant1->dir; /* set up ants on topMap */
         topMap[ant2->r][ant2->c] = ant2->dir;
 
-        loop(topMap, underMap, ant1, ant2, simsInfo);
+        loop(topMap, underMap, ant1, ant2, simsInfo); /* begin loop */
 
-        for(i = 0; i < simsInfo->nR; i++)
+        /*once loop finished, begin freeing variables*/
+        for(i = 0; i < simsInfo->nR; i++) /* the freeing of the map is put inside the if(check) statement because they're only malloc'd if check is true */
         {
             free(topMap[i]);
         }
@@ -40,14 +41,15 @@ int setupGame(int argc, char* argv[])
         }
         free(underMap);
     }
-    free(ant1);
+    /* below is malloc'd no matter what */
+    free(ant1); 
     free(ant2);
     free(simsInfo);
     return 0;
 }
 
 void setup2dArray(char*** map, simInfo* simsInfo)
-{
+{ /* used twice. once for each of the maps (topMap, underMap) */
     int i,j;
     *map = (char**)calloc((simsInfo->nR),sizeof(char*));
     for(i=0;i<(simsInfo->nR);i++)
@@ -55,19 +57,19 @@ void setup2dArray(char*** map, simInfo* simsInfo)
         (*map)[i] = (char*)calloc((simsInfo->nC), sizeof(char));
     }
     for(i=0;i<(simsInfo->nR);i++)
-    {
+    { /* create borders */
         (*map)[i][(simsInfo->nC)-1] = '*';
     }
     for(i=0;i<(simsInfo->nR);i++)
-    {
+    { /* create borders */
         (*map)[i][0] = '*';
     }
     for(i=0;i<(simsInfo->nC);i++)
-    {
+    { /* create borders */
         (*map)[0][i] = '*';
     }
     for(i=0;i<(simsInfo->nC);i++)
-    {
+    { /* create borders */
         (*map)[(simsInfo->nR)-1][i] = '*';
     }
     
@@ -91,15 +93,15 @@ int readMapFile(char*** underMap, simInfo* simsInfo, antStruct* ant1, antStruct*
     check = 1;
     counter = 1;
     if(argc != 4)
-    {
+    { /* if command line arguments did not meet required format */
         printf("Please run in the format of: './ant mapfile.txt step_number sleep_timer' \n");
         check = 0;
     }
     if(f1 == NULL)
-    {
+    { /* if file cannot be opened */
         perror("Error opening f1");
     }
-    nRead = fscanf(f1, "%d %d", &(simsInfo->nR), &(simsInfo->nC));
+    nRead = fscanf(f1, "%d %d", &(simsInfo->nR), &(simsInfo->nC)); /* read in first two variables as map rows and columns */
     simsInfo->nR +=2; /* increase so that if a user enters map size (5,5) they mean the size inside the borders. so technically map needs to be (7,7) */
     simsInfo->nC +=2;
 
@@ -109,7 +111,7 @@ int readMapFile(char*** underMap, simInfo* simsInfo, antStruct* ant1, antStruct*
         check = 0;
     }
 
-    rowcounter = 1;
+    rowcounter = 1; /* these track where the f1 pointer is "at" in the map. so because we begin addressing the area inside the map with the map file, technically we begin by addressing (1,1) of the overall 2d array (top left corner inside border) */
     colcounter = 1;
 
     do
@@ -130,51 +132,51 @@ int readMapFile(char*** underMap, simInfo* simsInfo, antStruct* ant1, antStruct*
             ant2->c ++;
             counter++;
 
+            /* now that map size and ant positions have been declared, validate all of them before initialising and setting up the map */
             if(simsInfo->nR < 2 || simsInfo->nC < 2 || ant1->r < 1 || ant1->c < 1 || ant2->r < 1 || ant2->c < 1) /*numbers are higher than 0 because of the addition done above*/
             {
                 printf("Cannot enter negative numbers!\n");
                 check = 0;
             }
-            if(ant1->r > simsInfo->nR - 2 || ant1->c > simsInfo->nC - 2)
-            {
+            if(ant1->r > simsInfo->nR - 2 || ant1->c > simsInfo->nC - 2) 
+            { /* only need to address when its larger than map size. (0,0) is considered within border (see discussion previously) and anything less than that is negative which is addressed directly above */
                 printf("Ant1 position placed outside of map area!\n");
                 check = 0;
             }
             if(ant2->r > simsInfo->nR - 2 || ant2->c > simsInfo->nC - 2)
-            {
+            { /* only need to address when its larger than map size. (0,0) is considered within border (see discussion previously) and anything less than that is negative which is addressed directly above */
                 printf("Ant2 position placed outside of map area!\n");
                 check = 0;
             }
 
             if(check)
             {
-                setup2dArray(underMap, simsInfo); /* to ensure map is not created if file inputs are invalid*/
+                setup2dArray(underMap, simsInfo); /* to ensure map is not created if file inputs are invalid */
             }
         }
         else
         {
-            ch = fgetc(f1);
+            ch = fgetc(f1); /* address each character */
 
             if(ch != EOF)
             {
-                if((char)ch == ' ')
-                {
+                if((char)ch == ' ') 
+                { /* as we move through each row, if there is a space between two characters then we know we've moved onto the next column (see map files, there are spaces between each column) */
                     colcounter ++;
                 }
                 if((char)ch == '\n')
-                {
+                { /* once we reach the \n character, we know we've reached the end of the row and that we're about to drop to the next row AND start from column 1 again*/
                     rowcounter ++;
                     colcounter = 1;
                 }
                 if((char)ch == '1')
-                {
-                    (*underMap)[rowcounter][colcounter] = 'G';
+                { /* if we've found a '1' within the file, we know this is meant to be initialised as a green floor */
+                    (*underMap)[rowcounter][colcounter] = 'G'; /* i use letters labelling each colour to easily understand */
                 }
             }
             else
             {
                 lilchecker = 0;
-                printf("\n");
             }
         }
         
