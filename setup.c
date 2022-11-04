@@ -220,12 +220,12 @@ int setupGame(int argc, char* argv[])
             free(topMap[i]);
         }
         free(topMap);
+        for(i = 0; i < simsInfo->nR; i++)
+        {
+            free(underMap[i]);
+        }
+        free(underMap);
     }
-    for(i = 0; i < simsInfo->nR; i++)
-    {
-        free(underMap[i]);
-    }
-    free(underMap);
     free(ant1);
     free(ant2);
     free(simsInfo);
@@ -295,8 +295,6 @@ int readMapFile(char*** underMap, simInfo* simsInfo, antStruct* ant1, antStruct*
         check = 0;
     }
 
-    setup2dArray(underMap, simsInfo);
-
     rowcounter = 1;
     colcounter = 1;
 
@@ -317,6 +315,27 @@ int readMapFile(char*** underMap, simInfo* simsInfo, antStruct* ant1, antStruct*
             ant2->r ++;
             ant2->c ++;
             counter++;
+
+            if(simsInfo->nR < 2 || simsInfo->nC < 2 || ant1->r < 1 || ant1->c < 1 || ant2->r < 1 || ant2->c < 1) /*numbers are higher than 0 because of the addition done above*/
+            {
+                printf("Cannot enter negative numbers!\n");
+                check = 0;
+            }
+            if(ant1->r > simsInfo->nR - 2 || ant1->c > simsInfo->nC - 2)
+            {
+                printf("Ant1 position placed outside of map area!\n");
+                check = 0;
+            }
+            if(ant2->r > simsInfo->nR - 2 || ant2->c > simsInfo->nC - 2)
+            {
+                printf("Ant2 position placed outside of map area!\n");
+                check = 0;
+            }
+
+            if(check)
+            {
+                setup2dArray(underMap, simsInfo); /* to ensure map is not created if file inputs are invalid*/
+            }
         }
         else
         {
@@ -343,30 +362,10 @@ int readMapFile(char*** underMap, simInfo* simsInfo, antStruct* ant1, antStruct*
                 lilchecker = 0;
                 printf("\n");
             }
-
         }
         
-    } while (nRead != EOF && lilchecker == 1);
+    } while (nRead != EOF && lilchecker == 1 && check == 1);
     
-
-
-    if(simsInfo->nR < 2 || simsInfo->nC < 2 || ant1->r < 1 || ant1->c < 1 || ant2->r < 1 || ant2->c < 1) /*numbers are higher than 0 because of the addition done above*/
-    {
-        printf("Cannot enter negative numbers!\n");
-        check = 0;
-    }
-
-    if(ant1->r > simsInfo->nR - 2 || ant1->c > simsInfo->nC - 2)
-    {
-        printf("Ant1 position placed outside of map area!\n");
-        check = 0;
-    }
-    if(ant2->r > simsInfo->nR - 2 || ant2->c > simsInfo->nC - 2)
-    {
-        printf("Ant2 position placed outside of map area!\n");
-        check = 0;
-    }
-
     fclose(f1);
     return check;
 }
