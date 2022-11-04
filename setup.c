@@ -199,7 +199,7 @@ int setupGame(int argc, char* argv[])
     antStruct* ant2 = (antStruct*)malloc(sizeof(antStruct));
     simInfo* simsInfo = (simInfo*)malloc(sizeof(simInfo));
 
-    int check,i,j;
+    int check,i;
 
     check = readMapFile(&underMap,simsInfo,ant1,ant2,argc,argv);
 
@@ -208,48 +208,13 @@ int setupGame(int argc, char* argv[])
         simsInfo->steps = atoi(argv[2]);
         simsInfo->sleep = atof(argv[3]);
 
-
-        topMap = (char**)calloc((simsInfo->nR),sizeof(char*));
-        for(i=0;i<(simsInfo->nR);i++)
-        {
-            topMap[i] = (char*)calloc((simsInfo->nC), sizeof(char));
-        }
-        for(i=0;i<(simsInfo->nR);i++)
-        {
-            topMap[i][(simsInfo->nC)-1] = '*';
-        }
-        for(i=0;i<(simsInfo->nR);i++)
-        {
-            topMap[i][0] = '*';
-        }
-        for(i=0;i<(simsInfo->nC);i++)
-        {
-            topMap[0][i] = '*';
-        }
-        for(i=0;i<(simsInfo->nC);i++)
-        {
-            topMap[(simsInfo->nR)-1][i] = '*';
-        }
+        setup2dArray(&topMap, simsInfo);
         
-        for(i=0;i<(simsInfo->nR);i++)
-        {
-            for(j=0;j<(simsInfo->nC);j++)
-            {
-                if(topMap[i][j] == 0)
-                {
-                    topMap[i][j] =  ' '; /*create empty space look*/
-                }
-            }
-        }
-
         topMap[ant1->r][ant1->c] = ant1->dir;
         topMap[ant2->r][ant2->c] = ant2->dir;
 
-        
         loop(topMap, underMap, ant1, ant2, simsInfo);
 
-
-       
         for(i = 0; i < simsInfo->nR; i++)
         {
             free(topMap[i]);
@@ -267,16 +232,53 @@ int setupGame(int argc, char* argv[])
     return 0;
 }
 
+void setup2dArray(char*** map, simInfo* simsInfo)
+{
+    int i,j;
+    *map = (char**)calloc((simsInfo->nR),sizeof(char*));
+    for(i=0;i<(simsInfo->nR);i++)
+    {
+        (*map)[i] = (char*)calloc((simsInfo->nC), sizeof(char));
+    }
+    for(i=0;i<(simsInfo->nR);i++)
+    {
+        (*map)[i][(simsInfo->nC)-1] = '*';
+    }
+    for(i=0;i<(simsInfo->nR);i++)
+    {
+        (*map)[i][0] = '*';
+    }
+    for(i=0;i<(simsInfo->nC);i++)
+    {
+        (*map)[0][i] = '*';
+    }
+    for(i=0;i<(simsInfo->nC);i++)
+    {
+        (*map)[(simsInfo->nR)-1][i] = '*';
+    }
+    
+    for(i=0;i<(simsInfo->nR);i++)
+    {
+        for(j=0;j<(simsInfo->nC);j++)
+        {
+            if((*map)[i][j] == 0)
+            {
+                (*map)[i][j] =  ' '; /*create empty space look*/
+            }
+        }
+    }
+}
+
 int readMapFile(char*** underMap, simInfo* simsInfo, antStruct* ant1, antStruct* ant2, int argc, char* argv[])
 {
-    int nRead, check, lilchecker, counter, i, j, ch, colcounter, rowcounter;
+    int nRead, check, lilchecker, counter, ch, colcounter, rowcounter;
 
     FILE* f1 = fopen(argv[1], "r");
     check = 1;
     counter = 1;
     if(argc != 4)
     {
-        printf("Please run in the format of: './ant mapfile.txt step_number sleep_timer \n");
+        printf("Please run in the format of: './ant mapfile.txt step_number sleep_timer' \n");
         check = 0;
     }
     if(f1 == NULL)
@@ -293,44 +295,7 @@ int readMapFile(char*** underMap, simInfo* simsInfo, antStruct* ant1, antStruct*
         check = 0;
     }
 
-
-
-
-
-
-
-    *underMap = (char**)calloc((simsInfo->nR),sizeof(char*));
-    for(i=0;i<(simsInfo->nR);i++)
-    {
-        (*underMap)[i] = (char*)calloc((simsInfo->nC), sizeof(char));
-    }
-    for(i=0;i<(simsInfo->nR);i++)
-    {
-        (*underMap)[i][(simsInfo->nC)-1] = '*';
-    }
-    for(i=0;i<(simsInfo->nR);i++)
-    {
-        (*underMap)[i][0] = '*';
-    }
-    for(i=0;i<(simsInfo->nC);i++)
-    {
-        (*underMap)[0][i] = '*';
-    }
-    for(i=0;i<(simsInfo->nC);i++)
-    {
-        (*underMap)[(simsInfo->nR)-1][i] = '*';
-    }
-    
-    for(i=0;i<(simsInfo->nR);i++)
-    {
-        for(j=0;j<(simsInfo->nC);j++)
-        {
-            if((*underMap)[i][j] == 0)
-            {
-                (*underMap)[i][j] =  ' '; /*create empty space look*/
-            }
-        }
-    }
+    setup2dArray(underMap, simsInfo);
 
     rowcounter = 1;
     colcounter = 1;
@@ -355,15 +320,6 @@ int readMapFile(char*** underMap, simInfo* simsInfo, antStruct* ant1, antStruct*
         }
         else
         {
-            /*if(fgets(str, *(nC) * 2, f1) != NULL)
-            {
-                printf("%s \n", str);
-            }
-            else
-            {
-                lilchecker = 0;
-            }*/
-
             ch = fgetc(f1);
 
             if(ch != EOF)
