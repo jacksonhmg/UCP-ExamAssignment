@@ -19,9 +19,6 @@ int setupGame(int argc, char* argv[])
 
     if(check) /* if all the inputs from the file were valid */
     {
-        simsInfo->steps = atoi(argv[2]); /* simulation steps */
-        simsInfo->sleep = atof(argv[3]); /* sleep (delay between each step) length*/
-
         setup2dArray(&topMap, simsInfo); /* creates topMap in accordance with read in variables */
         
         topMap[ant1->r][ant1->c] = ant1->dir; /* set up ants on topMap */
@@ -115,6 +112,9 @@ int readMapFile(char*** underMap, simInfo* simsInfo, antStruct* ant1, antStruct*
             check = 0;
         }
 
+        simsInfo->steps = atoi(argv[2]); /* simulation steps */
+        simsInfo->sleep = atof(argv[3]); /* sleep (delay between each step) length*/
+
         rowcounter = 1; /* these track where the f1 pointer is "at" in the map. so because we begin addressing the area inside the map with the map file, technically we begin by addressing (1,1) of the overall 2d array (top left corner inside border) */
         colcounter = 1;
 
@@ -137,7 +137,7 @@ int readMapFile(char*** underMap, simInfo* simsInfo, antStruct* ant1, antStruct*
                 counter++;
 
                 /* now that map size and ant positions have been declared, validate all of them before initialising and setting up the map */
-                if(simsInfo->nR < 2 || simsInfo->nC < 2 || ant1->r < 1 || ant1->c < 1 || ant2->r < 1 || ant2->c < 1) /*numbers are higher than 0 because of the addition done above*/
+                if(simsInfo->nR < 2 || simsInfo->nC < 2 || ant1->r < 1 || ant1->c < 1 || ant2->r < 1 || ant2->c < 1 || simsInfo->steps < 0 || simsInfo->sleep < 0) /* some numbers are higher than 0 because of the addition done above */
                 {
                     printf("Cannot enter negative numbers!\n");
                     check = 0;
@@ -185,7 +185,7 @@ int readMapFile(char*** underMap, simInfo* simsInfo, antStruct* ant1, antStruct*
             }
             
         } while (nRead != EOF && lilchecker == 1 && check == 1);
-        
+
         fclose(f1);
     }
     return check;
