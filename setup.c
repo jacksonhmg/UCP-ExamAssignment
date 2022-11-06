@@ -101,7 +101,7 @@ int readMapFile(char*** underMap, simInfo* simsInfo, antStruct* ant1, antStruct*
     { /* if file cannot be opened */
         perror("Error opening f1");
         check = 0;
-        free(f1);
+        free(f1); /* have to free it, if you try fclose(f1) when its null, you get an error */
     }
     else if(f1 != NULL)
     {
@@ -185,9 +185,8 @@ int readMapFile(char*** underMap, simInfo* simsInfo, antStruct* ant1, antStruct*
             }
             
         } while (nRead != EOF && lilchecker == 1 && check == 1);
-
+        
         fclose(f1);
     }
-
     return check;
 }
