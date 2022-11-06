@@ -100,88 +100,94 @@ int readMapFile(char*** underMap, simInfo* simsInfo, antStruct* ant1, antStruct*
     if(f1 == NULL)
     { /* if file cannot be opened */
         perror("Error opening f1");
-    }
-    nRead = fscanf(f1, "%d %d", &(simsInfo->nR), &(simsInfo->nC)); /* read in first two variables as map rows and columns */
-    simsInfo->nR +=2; /* increase so that if a user enters map size (5,5) they mean the size inside the borders. so technically map needs to be (7,7) */
-    simsInfo->nC +=2;
-
-    if(simsInfo->nR < 7 || simsInfo->nC < 7) /*7 because the inside can't be smaller than 5 and 7 is the number of whole array including border*/
-    {
-        printf("Map size too small!\n");
         check = 0;
+        free(f1);
     }
-
-    rowcounter = 1; /* these track where the f1 pointer is "at" in the map. so because we begin addressing the area inside the map with the map file, technically we begin by addressing (1,1) of the overall 2d array (top left corner inside border) */
-    colcounter = 1;
-
-    do
+    else if(f1 != NULL)
     {
-        lilchecker = 1;
-        if(counter == 1)
+        nRead = fscanf(f1, "%d %d", &(simsInfo->nR), &(simsInfo->nC)); /* read in first two variables as map rows and columns */
+        simsInfo->nR +=2; /* increase so that if a user enters map size (5,5) they mean the size inside the borders. so technically map needs to be (7,7) */
+        simsInfo->nC +=2;
+
+        if(simsInfo->nR < 7 || simsInfo->nC < 7) /*7 because the inside can't be smaller than 5 and 7 is the number of whole array including border*/
         {
-            nRead = fscanf(f1, "%d %d %c ", &(ant1->r), &(ant1->c), &(ant1->dir));
-            ant1->r ++; /* increase numbers like described before with map size increases. 
-            now user can enter (0,0) and have it mean the top left corner INSIDE the borders */
-            ant1->c ++;
-            counter++;
+            printf("Map size too small!\n");
+            check = 0;
         }
-        else if(counter == 2)
+
+        rowcounter = 1; /* these track where the f1 pointer is "at" in the map. so because we begin addressing the area inside the map with the map file, technically we begin by addressing (1,1) of the overall 2d array (top left corner inside border) */
+        colcounter = 1;
+
+        do
         {
-            nRead = fscanf(f1, "%d %d %c ", &(ant2->r), &(ant2->c), &(ant2->dir));
-            ant2->r ++;
-            ant2->c ++;
-            counter++;
-
-            /* now that map size and ant positions have been declared, validate all of them before initialising and setting up the map */
-            if(simsInfo->nR < 2 || simsInfo->nC < 2 || ant1->r < 1 || ant1->c < 1 || ant2->r < 1 || ant2->c < 1) /*numbers are higher than 0 because of the addition done above*/
+            lilchecker = 1;
+            if(counter == 1)
             {
-                printf("Cannot enter negative numbers!\n");
-                check = 0;
+                nRead = fscanf(f1, "%d %d %c ", &(ant1->r), &(ant1->c), &(ant1->dir));
+                ant1->r ++; /* increase numbers like described before with map size increases. 
+                now user can enter (0,0) and have it mean the top left corner INSIDE the borders */
+                ant1->c ++;
+                counter++;
             }
-            if(ant1->r > simsInfo->nR - 2 || ant1->c > simsInfo->nC - 2) 
-            { /* only need to address when its larger than map size. (0,0) is considered within border (see discussion previously) and anything less than that is negative which is addressed directly above */
-                printf("Ant1 position placed outside of map area!\n");
-                check = 0;
-            }
-            if(ant2->r > simsInfo->nR - 2 || ant2->c > simsInfo->nC - 2)
-            { /* only need to address when its larger than map size. (0,0) is considered within border (see discussion previously) and anything less than that is negative which is addressed directly above */
-                printf("Ant2 position placed outside of map area!\n");
-                check = 0;
-            }
-
-            if(check)
+            else if(counter == 2)
             {
-                setup2dArray(underMap, simsInfo); /* to ensure map is not created if file inputs are invalid */
-            }
-        }
-        else
-        {
-            ch = fgetc(f1); /* address each character */
+                nRead = fscanf(f1, "%d %d %c ", &(ant2->r), &(ant2->c), &(ant2->dir));
+                ant2->r ++;
+                ant2->c ++;
+                counter++;
 
-            if(ch != EOF)
-            {
-                if((char)ch == ' ') 
-                { /* as we move through each row, if there is a space between two characters then we know we've moved onto the next column (see map files, there are spaces between each column) */
-                    colcounter ++;
+                /* now that map size and ant positions have been declared, validate all of them before initialising and setting up the map */
+                if(simsInfo->nR < 2 || simsInfo->nC < 2 || ant1->r < 1 || ant1->c < 1 || ant2->r < 1 || ant2->c < 1) /*numbers are higher than 0 because of the addition done above*/
+                {
+                    printf("Cannot enter negative numbers!\n");
+                    check = 0;
                 }
-                if((char)ch == '\n')
-                { /* once we reach the \n character, we know we've reached the end of the row and that we're about to drop to the next row AND start from column 1 again*/
-                    rowcounter ++;
-                    colcounter = 1;
+                if(ant1->r > simsInfo->nR - 2 || ant1->c > simsInfo->nC - 2) 
+                { /* only need to address when its larger than map size. (0,0) is considered within border (see discussion previously) and anything less than that is negative which is addressed directly above */
+                    printf("Ant1 position placed outside of map area!\n");
+                    check = 0;
                 }
-                if((char)ch == '1')
-                { /* if we've found a '1' within the file, we know this is meant to be initialised as a green floor */
-                    (*underMap)[rowcounter][colcounter] = 'G'; /* i use letters labelling each colour to easily understand */
+                if(ant2->r > simsInfo->nR - 2 || ant2->c > simsInfo->nC - 2)
+                { /* only need to address when its larger than map size. (0,0) is considered within border (see discussion previously) and anything less than that is negative which is addressed directly above */
+                    printf("Ant2 position placed outside of map area!\n");
+                    check = 0;
+                }
+
+                if(check)
+                {
+                    setup2dArray(underMap, simsInfo); /* to ensure map is not created if file inputs are invalid */
                 }
             }
             else
             {
-                lilchecker = 0;
+                ch = fgetc(f1); /* address each character */
+
+                if(ch != EOF)
+                {
+                    if((char)ch == ' ') 
+                    { /* as we move through each row, if there is a space between two characters then we know we've moved onto the next column (see map files, there are spaces between each column) */
+                        colcounter ++;
+                    }
+                    if((char)ch == '\n')
+                    { /* once we reach the \n character, we know we've reached the end of the row and that we're about to drop to the next row AND start from column 1 again*/
+                        rowcounter ++;
+                        colcounter = 1;
+                    }
+                    if((char)ch == '1')
+                    { /* if we've found a '1' within the file, we know this is meant to be initialised as a green floor */
+                        (*underMap)[rowcounter][colcounter] = 'G'; /* i use letters labelling each colour to easily understand */
+                    }
+                }
+                else
+                {
+                    lilchecker = 0;
+                }
             }
-        }
-        
-    } while (nRead != EOF && lilchecker == 1 && check == 1);
-    
-    fclose(f1);
+            
+        } while (nRead != EOF && lilchecker == 1 && check == 1);
+
+        fclose(f1);
+    }
+
     return check;
 }
